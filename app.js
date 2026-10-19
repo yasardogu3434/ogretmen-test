@@ -528,13 +528,20 @@
       + (hf ? '<button type="button" class="sk2w" data-dt="' + olayKodu(hf) + '"><em>' + (simdiHafta ? 'Şu an' : 'Sınav haftası') + '</em><b>' + esc(hf.ad) + '</b><span>' + esc(aralik(hf.bas, hf.bit)) + '</span></button>' : '')
       + (ilk ? '<div class="sk2l">' + ex.slice(0, 3).map(function (o) { var d = tarihCoz(o.bas); return '<button type="button" class="sk2r" data-dt="' + olayKodu(o) + '"><span class="yd">' + tarihEtiket(o.bas) + '</span><span class="a"><b>' + esc(o.ad) + '</b><span>' + esc(GKISA[d.getDay()] + (o.alt ? ' · ' + o.alt : '')) + '</span></span></button>'; }).join('') + '</div>' : '') + '</div>';
   }
+  function dzTarih(a, b) {
+    var d = tarihCoz(a), l1, l2;
+    if (!b || b === a) { l1 = d.getDate(); l2 = AYK[d.getMonth()]; }
+    else if (a.slice(5, 7) === b.slice(5, 7)) { l1 = d.getDate() + '–' + (+b.slice(8)); l2 = AYK[d.getMonth()]; }
+    else { l1 = d.getDate() + ' ' + AYK[d.getMonth()]; l2 = '– ' + (+b.slice(8)) + ' ' + AYK[+b.slice(5, 7) - 1]; }
+    return '<span class="dz"><b>' + esc(l1) + '</b><i>' + esc(l2) + '</i></span>';
+  }
   function ayListe(ol, base, kf) {
     if (kf === 'nobet') return '';
     var m0 = iso(base), m1 = iso(new Date(base.getFullYear(), base.getMonth() + 1, 0));
     var l = ol.filter(function (o) { return o.bas <= m1 && o.bit >= m0 && (!kf || o.k === kf); }).sort(function (p, q) { return p.bas < q.bas ? -1 : (p.bas > q.bas ? 1 : 0); });
     if (!l.length) return '<div class="aylb">Bu ay kayıt yok</div>';
     return '<div class="sec">' + secH(AY[base.getMonth()] + ' kayıtları', l.length + ' kayıt') + '<div class="rows">' + l.map(function (o) {
-      return '<div class="rw" data-dt="' + esc(olayKodu(o)) + '"><span class="z" style="width:62px;flex:none;color:var(--tx);font-weight:650">' + esc(aralik(o.bas, o.bit)) + '</span><div class="a"><b>' + esc(o.ad) + '</b><span class="s">' + (KAT[o.k] ? katIk(o.k) + ' ' + esc(KAT[o.k][0]) : '') + (o.alt ? ' · ' + esc(o.alt) : '') + '</span></div></div>';
+      return '<div class="rw ev" style="--c:' + (KAT[o.k] ? KAT[o.k][1] : '#999') + '" data-dt="' + esc(olayKodu(o)) + '">' + dzTarih(o.bas, o.bit) + '<div class="a"><b>' + esc(o.ad) + '</b><span class="s">' + esc((KAT[o.k] ? KAT[o.k][0] : '') + (o.alt ? ' · ' + o.alt : '')) + '</span></div></div>';
     }).join('') + '</div></div>';
   }
   function ayHTML(C) {
@@ -553,11 +560,6 @@
       h += '<button type="button" class="mc' + (ds === C.gb.ds ? ' td' : '') + (tat && (!kf || kf === 'tatil') ? ' hol' : '') + (exw && !tat ? ' exw' : '') + (wd > 5 ? ' we' : '') + '" data-dt="gun:' + ds + '"><span>' + g + '</span><em>' + dots.map(function (k) { return '<i style="background:' + KAT[k][1] + '"></i>'; }).join('') + '</em></button>';
     }
     h += '</div>';
-    var lst = ol.filter(function (o) { return o.bit.slice(0, 7) >= ym && o.bas.slice(0, 7) <= ym && (!kf || kf === o.k); });
-    h += '<div class="sec">' + secH(AY[base.getMonth()] + ' kayıtları', lst.length ? lst.length + ' kayıt' : '') + '<div class="rows">' + (lst.length ? lst.map(function (o) {
-      var ds = o.bas.slice(0, 7) < ym ? ym + '-01' : o.bas;
-      return '<div class="rw ev" style="--c:' + KAT[o.k][1] + '" data-dt="' + esc(olayKodu(o)) + '"><span class="yd">' + tarihEtiket(ds) + '</span><div class="a"><b>' + esc(o.ad) + '</b><span class="s">' + esc(KAT[o.k][0] + (o.alt ? ' · ' + o.alt : '')) + '</span></div></div>';
-    }).join('') : '<div class="empty" style="padding:24px 0;text-align:left"><b style="font-size:15px">Bu ay kayıt yok</b></div>') + '</div></div>';
     return h;
   }
   function dtOlay(i) {
@@ -696,7 +698,7 @@
     else if (sonraki && WK === 0 && iso(gunEkle(mon, 7)) === sonraki && n.gelecek) h += '<div class="sec"><div class="rot"><p>Gelecek hafta nöbet düzenin değişiyor</p><button class="lk" type="button" data-go="1">Gelecek haftaya bak</button></div></div>';
     if (nobetSatir) h += '<div class="sec">' + secH('Nöbetin') + '<div class="rows">' + nobetSatir + '</div></div>';
     var ev = haftaKayitlari(C, mon);
-    if (ev.length) h += '<div class="sec">' + secH(['Geçen', 'Bu', 'Gelecek'][WK + 1] + ' haftanın kayıtları', ev.length + ' kayıt') + '<div class="rows">' + ev.map(function (e) { return '<div class="rw" data-dt="gun:' + e[0] + '"><span class="z" style="width:46px;flex:none;color:var(--tx);font-weight:650">' + esc(e[1]) + '</span><div class="a"><b>' + esc(e[2]) + '</b><span class="s">' + esc(e[3]) + '</span></div></div>'; }).join('') + '</div></div>';
+    if (ev.length) h += '<div class="sec">' + secH(['Geçen', 'Bu', 'Gelecek'][WK + 1] + ' haftanın kayıtları', ev.length + ' kayıt') + '<div class="rows">' + ev.map(function (e) { return '<div class="rw" data-dt="gun:' + e[0] + '"><span class="z" style="min-width:46px;flex:none;white-space:nowrap;color:var(--tx);font-weight:650">' + esc(e[1]) + '</span><div class="a"><b>' + esc(e[2]) + '</b><span class="s">' + esc(e[3]) + '</span></div></div>'; }).join('') + '</div></div>';
     return h || '<div class="empty"><b>Bu hafta paylaşılan kayıt yok</b>Etkinlik, duyuru ya da nöbet değişikliği paylaşıldığında burada görünür.</div>';
   }
 
@@ -1013,7 +1015,7 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
   }
   function kvH(k, v) { return '<div class="kv"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>'; }
   function dtSatir(kod, sol, orta, alt, sag, cls) {
-    return '<div class="rw' + (cls ? ' ' + cls : '') + '" data-dt="' + esc(kod) + '">' + (sol ? '<span class="z" style="width:46px;flex:none;color:var(--tx);font-weight:650">' + esc(sol) + '</span>' : '') + '<div class="a"><b>' + esc(orta) + '</b>' + (alt ? '<span class="s">' + esc(alt) + '</span>' : '') + '</div>' + (sag ? '<span class="z">' + esc(sag) + '</span>' : '') + '</div>';
+    return '<div class="rw' + (cls ? ' ' + cls : '') + '" data-dt="' + esc(kod) + '">' + (sol ? '<span class="z" style="min-width:46px;flex:none;white-space:nowrap;color:var(--tx);font-weight:650">' + esc(sol) + '</span>' : '') + '<div class="a"><b>' + esc(orta) + '</b>' + (alt ? '<span class="s">' + esc(alt) + '</span>' : '') + '</div>' + (sag ? '<span class="z">' + esc(sag) + '</span>' : '') + '</div>';
   }
   function dtAc(kod) {
     var p = String(kod).split(':'), t = p[0];
