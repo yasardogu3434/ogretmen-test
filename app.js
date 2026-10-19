@@ -528,10 +528,20 @@
       + (hf ? '<button type="button" class="sk2w" data-dt="' + olayKodu(hf) + '"><em>' + (simdiHafta ? 'Şu an' : 'Sınav haftası') + '</em><b>' + esc(hf.ad) + '</b><span>' + esc(aralik(hf.bas, hf.bit)) + '</span></button>' : '')
       + (ilk ? '<div class="sk2l">' + ex.slice(0, 3).map(function (o) { var d = tarihCoz(o.bas); return '<button type="button" class="sk2r" data-dt="' + olayKodu(o) + '"><span class="yd">' + tarihEtiket(o.bas) + '</span><span class="a"><b>' + esc(o.ad) + '</b><span>' + esc(GKISA[d.getDay()] + (o.alt ? ' · ' + o.alt : '')) + '</span></span></button>'; }).join('') + '</div>' : '') + '</div>';
   }
+  function ayListe(ol, base, kf) {
+    if (kf === 'nobet') return '';
+    var m0 = iso(base), m1 = iso(new Date(base.getFullYear(), base.getMonth() + 1, 0));
+    var l = ol.filter(function (o) { return o.bas <= m1 && o.bit >= m0 && (!kf || o.k === kf); }).sort(function (p, q) { return p.bas < q.bas ? -1 : (p.bas > q.bas ? 1 : 0); });
+    if (!l.length) return '<div class="aylb">Bu ay kayıt yok</div>';
+    return '<div class="sec">' + secH(AY[base.getMonth()] + ' kayıtları', l.length + ' kayıt') + '<div class="rows">' + l.map(function (o) {
+      return '<div class="rw" data-dt="' + esc(olayKodu(o)) + '"><span class="z" style="width:62px;flex:none;color:var(--tx);font-weight:650">' + esc(aralik(o.bas, o.bit)) + '</span><div class="a"><b>' + esc(o.ad) + '</b><span class="s">' + (KAT[o.k] ? katIk(o.k) + ' ' + esc(KAT[o.k][0]) : '') + (o.alt ? ' · ' + esc(o.alt) : '') + '</span></div></div>';
+    }).join('') + '</div></div>';
+  }
   function ayHTML(C) {
     var y = C.y, base = new Date(C.d.getFullYear(), C.d.getMonth() + MO, 1), ol = olaylar(y), ym = iso(base).slice(0, 7);
     var first = (base.getDay() + 6) % 7, dim = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate(), kf = KFM[KF] || '';
-    var h = sinavKarti(C) + '<div class="chips kf" id="kf">' + ['Tümü', 'Sınav', 'Etkinlik', 'Tatil', 'Özel gün', 'Nöbetim'].map(function (c) { return '<button type="button"' + (KF === c ? ' class="on"' : '') + '>' + (KFM[c] ? katIk(KFM[c]) : '') + c + '</button>'; }).join('') + '</div>';
+    var h = '<div class="chips kf" id="kf">' + ['Tümü', 'Sınav', 'Etkinlik', 'Tatil', 'Özel gün', 'Nöbetim'].map(function (c) { return '<button type="button"' + (KF === c ? ' class="on"' : '') + '>' + (KFM[c] ? katIk(KFM[c]) : '') + c + '</button>'; }).join('') + '</div>';
+    h += ayListe(ol, base, kf);
     h += '<div class="mg">' + ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(function (g) { return '<span class="mh">' + g + '</span>'; }).join('');
     for (var i = 0; i < first; i++) h += '<span class="mc out"></span>';
     for (var g = 1; g <= dim; g++) {
@@ -722,7 +732,7 @@
     var cvh = '<div class="tabs" id="cv">' + [['0', 'Hafta'], ['1', 'Ay']].map(function (x) { return '<button type="button" data-cv="' + x[0] + '"' + (CV === +x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>';
     if (CV === 1) {
       var mb = new Date(C.d.getFullYear(), C.d.getMonth() + MO, 1);
-      return logoBar(C, 'Öğretmen ekranı') + '<div class="tz d">Takvim</div>' + cvh + '<div class="mn"><button type="button" data-mo="-1" aria-label="Önceki ay">' + IK_ONC + '</button><b class="d">' + AY[mb.getMonth()] + ' ' + mb.getFullYear() + '</b><button type="button" data-mo="1" aria-label="Sonraki ay">' + IK_SON + '</button>' + (MO ? '<button type="button" class="bg" data-mo="0">Bugün</button>' : '') + '</div>';
+      return logoBar(C, 'Öğretmen ekranı') + '<div class="tz d">Takvim</div>' + cvh + '<div class="mn"><button type="button" data-mo="-1" aria-label="Önceki ay">' + IK_ONC + '</button><div class="mm"><b class="d">' + AY[mb.getMonth()] + ' ' + mb.getFullYear() + '</b>' + (MO ? '<button type="button" class="bg" data-mo="0">Bugün</button>' : '') + '</div><button type="button" data-mo="1" aria-label="Sonraki ay">' + IK_SON + '</button></div>';
     }
     var mon = gunEkle(pazartesi(C.d), WK * 7), gunler = []; for (var i = 0; i < 5; i++) gunler.push(gunEkle(mon, i));
     var gl = gunler.map(function (d) { var g = y ? gunBilgi(y, d) : { tip: 'ders' }; return { d: d, h: g.tip === 'tatil', on: iso(d) === C.gb.ds }; });
@@ -1122,6 +1132,7 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
   }
   $('sh').addEventListener('click', function (ev) {
     var t = ev.target, b;
+    if (!t.closest('button, input, textarea, select, a, label') && $('sh').scrollTop < 8 && ev.clientY - $('sh').getBoundingClientRect().top < 64) { kapat(); return; }
     if ((b = t.closest('#o_th button'))) { if (b.dataset.v === 'oto') sil(K.tema); else yaz(K.tema, b.dataset.v); tercihUygula(); ayarAc(); return; }
     if ((b = t.closest('#o_ac button'))) { if (b.dataset.v) yaz(K.ac, b.dataset.v); else sil(K.ac); tercihUygula(); ayarAc(); return; }
     if ((b = t.closest('#o_gv button'))) { yaz(K.gun, b.dataset.v); ayarAc(); render(); return; }

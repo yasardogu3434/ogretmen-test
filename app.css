@@ -418,3 +418,7 @@ a.dl small{font-weight:500;color:var(--mut);font-size:12.5px}
 .thd svg{width:50px;height:50px;display:block;margin:0 auto}.thd .g0{fill:none;stroke:var(--line);stroke-width:5}.thd path{fill:none;stroke-width:5}.thd .g1{stroke:var(--mut)}.thd .g2{stroke:var(--gold)}
 
 .fsz button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0!important}.fsz span{font-weight:700;line-height:1.1;height:24px;display:flex;align-items:center}.fsz small{font-size:12px;font-weight:650;color:var(--mut)}.fsz button.on small{color:var(--tx)}
+
+.mn .mm{flex:1;position:relative;display:flex;justify-content:center;align-items:center;min-width:0}.mn .mm b{flex:none}.mn .mm button.bg{position:absolute;right:0;top:50%;transform:translateY(-50%);height:30px;padding:0 12px}
+
+.aylb{margin:14px 20px 0;font-size:13.5px;color:var(--mut)}
