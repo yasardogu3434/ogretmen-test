@@ -191,3 +191,5 @@ button{font-family:inherit}
 nav{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .stamp button{margin-left:auto;border:0;background:none;color:var(--gold);font:inherit;font-weight:700;font-size:12.5px;padding:4px 0 4px 10px;cursor:pointer}
 .rw.me b::after{content:" · sen";color:var(--gold);font-weight:600;font-size:12px}
+#t0>.stamp,#t2>.stamp,#t3>.stamp{margin-left:20px;margin-right:20px}
+.stamp span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
