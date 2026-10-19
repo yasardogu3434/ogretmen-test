@@ -1,18 +1,21 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Adım 1 Deneme</title>
-<style>body{font:16px system-ui;margin:20px;color:#13244A}input,button{font:inherit;padding:10px;width:100%;box-sizing:border-box;margin:6px 0}button{background:#13244A;color:#fff;border:0;border-radius:8px}pre{background:#F6F7F9;padding:10px;white-space:pre-wrap;word-break:break-all}</style></head><body>
-<h3>Adım 1 — bağlantı denemesi</h3>
-<input id="u" placeholder="Apps Script /exec adresi">
-<button id="b">5 kez dene ve süreyi ölç</button><pre id="o">Hazır.</pre>
-<script>
-var u=document.getElementById('u'),o=document.getElementById('o');
-try{u.value=localStorage.getItem('u')||''}catch(e){}
-document.getElementById('b').onclick=async function(){
-  try{localStorage.setItem('u',u.value)}catch(e){}
-  o.textContent='';var t=[];
-  for(var i=1;i<=5;i++){var s=performance.now();
-    try{var r=await fetch(u.value+(u.value.indexOf('?')<0?'?':'&')+'x='+i);var j=await r.json();var d=Math.round(performance.now()-s);t.push(d);o.textContent+=i+'. TAMAM '+d+' ms  '+JSON.stringify(j)+'\n'}
-    catch(e){o.textContent+=i+'. HATA '+e+'\n'}}
-  if(t.length)o.textContent+='\nOrtalama: '+Math.round(t.reduce((a,b)=>a+b)/t.length)+' ms';
-};
-</script></body></html>
+<!doctype html>
+<html lang="tr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#13244A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Öğretmen">
+<meta name="robots" content="noindex,nofollow">
+<title>Öğretmen Ekranı</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="ikon/ikon-192.png">
+<link rel="icon" href="ikon/ikon-192.png">
+<link rel="stylesheet" href="app.css">
+</head><body>
+<main id="uyg"></main>
+<noscript><p style="padding:24px;font:16px system-ui">Bu uygulama JavaScript gerektirir.</p></noscript>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body></html>
