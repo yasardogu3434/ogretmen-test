@@ -215,7 +215,34 @@
         s.appendChild(rows); kap.appendChild(s);
       }
     }
+    gosterilen += duyuruCiz(kap, y);
     if (!gosterilen) kap.appendChild(el('div', 'note', 'Henüz yayınlanmış bilgi yok. Okul yönetimi paylaştıkça burada görünecek.'));
+  }
+
+
+  // ---- Duyurular (okul yönetiminin öğretmenlere AYRICA yazdıkları; yönetim notlarıyla ilgisi yok) ----
+  var TUR_AD = { duyuru: 'Duyuru', etkinlik: 'Etkinlik', hatirlatma: 'Hatırlatma' };
+  function trTarih(t) { return /^\d{4}-\d{2}-\d{2}$/.test(t || '') ? (t.slice(8, 10) + '.' + t.slice(5, 7) + '.' + t.slice(0, 4)) : ''; }
+  function duyuruCiz(kap, y) {
+    var l = Array.isArray(y.duyurular) ? y.duyurular.filter(function (d) { return d && d.baslik; }) : [];
+    if (!l.length) return 0;
+    l = l.map(function (d, i) { return { d: d, i: i }; }).sort(function (a, b) {
+      var x = a.d.tarih || '9999', z = b.d.tarih || '9999';
+      return x < z ? -1 : (x > z ? 1 : a.i - b.i);
+    }).map(function (o) { return o.d; });
+    var s = el('div', 'sec'); var h2 = el('h2', ''); h2.appendChild(document.createTextNode('Duyurular')); h2.appendChild(el('span', '', l.length + ' duyuru'));
+    s.appendChild(h2);
+    var bg = bugunStr();
+    l.forEach(function (d) {
+      var k = el('div', 'dy' + (d.tarih === bg ? ' bugun' : ''));
+      var ust = el('div', 'dyu'); ust.appendChild(el('span', 'tr', TUR_AD[d.tur] || 'Duyuru'));
+      var zm = [d.tarih === bg ? 'Bugün' : trTarih(d.tarih), /^\d{2}:\d{2}$/.test(d.saat || '') ? d.saat : ''].filter(Boolean).join(' · ');
+      if (zm) ust.appendChild(el('span', 'zm', zm));
+      k.appendChild(ust); k.appendChild(el('b', '', String(d.baslik)));
+      if (d.metin) k.appendChild(el('p', '', String(d.metin)));
+      s.appendChild(k);
+    });
+    kap.appendChild(s); return 1;
   }
 
   function ayarCiz() {

@@ -67,3 +67,11 @@ button{font:inherit;color:inherit}
 .lbl{font-size:13px;color:var(--mut);margin-top:16px}
 .out{display:block;width:100%;border:0;background:none;color:var(--err);font-weight:650;font-size:15.5px;padding:16px 0 4px;text-align:left;cursor:pointer}
 .kapat{display:block;width:100%;margin-top:14px;border:1.5px solid var(--line);background:none;color:var(--tx);font-weight:650;padding:13px 0;border-radius:14px;cursor:pointer}
+
+.dy{margin-top:10px;padding:14px 16px;border-radius:14px;background:var(--surf);border:1px solid var(--line)}
+.dy.bugun{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.dyu{display:flex;gap:8px;align-items:center;font-size:12.5px;margin-bottom:4px}
+.dyu .tr{font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.4px;font-size:11.5px}
+.dyu .zm{color:var(--mut);margin-left:auto}
+.dy b{display:block;font-size:16px;font-weight:650}
+.dy p{margin-top:4px;font-size:14.5px;line-height:1.45;color:var(--mut);white-space:pre-line;overflow-wrap:anywhere}
