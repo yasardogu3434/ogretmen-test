@@ -486,3 +486,14 @@ a.dl small{font-weight:500;color:var(--mut);font-size:12.5px}
 .dback::after{content:"";position:absolute;inset:-2px}
 .mn button::after,.sw2 button::after{content:"";position:absolute;inset:-4px}
 .sw2 button{position:relative}
+
+/* Bölüm renkleri: sabit, vurgu renginden bağımsız, birbirine karışan yumuşak zeminler */
+:root{--c-gunum:#3D8FE0;--c-yarin:#7F62E0;--c-yaklasan:#E8A33A;--c-neler:#2E9E73;--c-nobet:#D8527A;--c-pano:#2BA3B8;--c-not:#8FA23A;--tint:13%}
+@media(prefers-color-scheme:dark){:root:not([data-th=light]){--tint:20%}}
+:root[data-th=dark]{--tint:20%}
+#t0>.sec[data-r],#t1>.sec[data-r],#t2>.sec[data-r],#t3>.sec[data-r]{padding-top:26px;padding-bottom:26px;margin-top:0;margin-bottom:0;background:linear-gradient(180deg,color-mix(in srgb,color-mix(in srgb,var(--sc),var(--scp,var(--sc))) var(--tint),var(--paper)) 0,color-mix(in srgb,var(--sc) var(--tint),var(--paper)) 44px,color-mix(in srgb,var(--sc) var(--tint),var(--paper)) calc(100% - 44px),color-mix(in srgb,color-mix(in srgb,var(--sc),var(--scn,var(--sc))) var(--tint),var(--paper)) 100%)}
+#t0>.sec[data-r]:first-of-type,#t0>.stamp+.sec[data-r]{margin-top:0}
+#dt[data-r]{background:linear-gradient(180deg,color-mix(in srgb,var(--sc) var(--tint),var(--paper)),color-mix(in srgb,var(--sc) calc(var(--tint) / 2),var(--paper)) 60%,var(--paper))}
+#t0>.sec[data-r],#t1>.sec[data-r],#t2>.sec[data-r],#t3>.sec[data-r]{--mut:#586478}
+@media(prefers-color-scheme:dark){:root:not([data-th=light]) #t0>.sec[data-r],:root:not([data-th=light]) #t1>.sec[data-r],:root:not([data-th=light]) #t2>.sec[data-r],:root:not([data-th=light]) #t3>.sec[data-r]{--mut:#8E9CBA}}
+:root[data-th=dark] #t0>.sec[data-r],:root[data-th=dark] #t1>.sec[data-r],:root[data-th=dark] #t2>.sec[data-r],:root[data-th=dark] #t3>.sec[data-r]{--mut:#8E9CBA}

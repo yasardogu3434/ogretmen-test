@@ -6,14 +6,33 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Öğretmen">
+<meta name="apple-mobile-web-app-title" content="Y. Doğu Öğretmen">
 <meta name="robots" content="noindex,nofollow">
-<title>Öğretmen Ekranı</title>
+<title>Yaşar Doğu Öğretmen</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="ikon/ikon-192.png">
 <link rel="icon" href="ikon/ikon-192.png">
 <link rel="stylesheet" href="app.css">
+<style id="splcss">
+#spl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;color:#fff;background:radial-gradient(120% 80% at 50% 25%,#1E3563 0,#13244A 55%,#0B1429 100%);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;transition:opacity .45s ease,visibility .45s}
+#spl.bit{opacity:0;visibility:hidden;pointer-events:none}
+#spl .lg{position:relative;width:132px;height:132px;display:flex;align-items:center;justify-content:center;animation:splN 2.6s ease-in-out infinite}
+#spl .lg:before{content:"";position:absolute;inset:14px;border-radius:50%;background:#F3F5F9;box-shadow:0 0 0 6px rgba(255,255,255,.08),0 0 44px rgba(200,147,43,.28)}
+#spl .lg img{position:relative;width:84px;height:84px;object-fit:contain}
+#spl .rg{position:absolute;inset:0;width:100%;height:100%;animation:splD 1.15s linear infinite}
+#spl .rg circle{fill:none;stroke-width:3;stroke-linecap:round}
+#spl .rg .a{stroke:rgba(255,255,255,.12)}#spl .rg .b{stroke:#C8932B;stroke-dasharray:70 270}
+#spl h1{margin:26px 0 0;font-size:24px;font-weight:650;letter-spacing:-.3px}
+#spl p{margin:8px 0 0;font-size:16px;color:#C9D3EA;min-height:22px}
+#spl small{margin-top:30px;font-size:12.5px;letter-spacing:.3px;color:#8E9CBA}
+@keyframes splD{to{transform:rotate(360deg)}}
+@keyframes splN{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@media(prefers-reduced-motion:reduce){#spl .lg{animation:none}#spl .rg{animation-duration:3s}}
+</style>
+
 </head><body>
+<div id="spl" role="status" aria-live="polite" aria-label="Yükleniyor"><div class="lg"><svg class="rg" viewBox="0 0 132 132" aria-hidden="true"><circle class="a" cx="66" cy="66" r="62"/><circle class="b" cx="66" cy="66" r="62"/></svg><img src="ikon/logo.png" alt="" width="84" height="84"></div><h1>Yaşar Doğu Öğretmen</h1><p id="splh">Hoş geldiniz</p><small>Yükleniyor…</small></div>
+<script src="acilis.js"></script>
 <div class="phone" id="ph">
 <div class="mini" id="mini"><b id="mb"></b><span id="ms"></span></div>
 <div class="lock" id="lock"></div>

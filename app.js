@@ -3,6 +3,7 @@
 (function () {
   'use strict';
   var A = window.OGR_AYAR;
+  var APP_SURUM = '0.9.0'; // bu dosyanın kendi sürümü; config.js'teki SURUM ile eşleşmezse eski dosya kalmıştır
   var K = { okul: 'ogr_okul', kod: 'ogr_kod', cihaz: 'ogr_cihaz', onb: 'ogr_onbellek', tema: 'ogr_tema', ac: 'ogr_ac', fs: 'ogr_fs', gizle: 'ogr_gizle', notlar: 'ogr_notlar', gorulen: 'ogr_gorulen', acilis: 'ogr_acilis', gun: 'ogr_gun', son: 'ogr_son', isl: 'ogr_islendi' };
   var MESAJ = {
     okul: 'Okul kodu hatalı. Tekrar dene.',
@@ -224,7 +225,7 @@
     var b = $('tb'); if (b) { b.innerHTML = '<svg viewBox="0 0 24 24">' + TEMA_IK[n] + '</svg>'; b.setAttribute('aria-label', 'Tema: ' + TEMA_AD[n] + ' (değiştirmek için dokun)'); }
   }
   function logoBar(C, alt) {
-    var d = C.d, ad = (C.y && C.y.kisi && C.y.kisi.ad) || '', okul = (C.y && C.y.okul) || 'Öğretmen Ekranı', th = oku(K.tema) || 'oto', hf = egitimHaftasi(C);
+    var d = C.d, ad = (C.y && C.y.kisi && C.y.kisi.ad) || '', okul = (C.y && C.y.okul) || 'Yaşar Doğu Öğretmen', th = oku(K.tema) || 'oto', hf = egitimHaftasi(C);
     return '<div class="bar"><button class="who0" id="ob" type="button" aria-label="Görünüm ve hesap"><span class="lg"><img src="' + LOGO + '" alt=""></span><span class="nm"><b>' + esc(ad || okul) + '</b><span>' + esc(ad ? okul : alt) + '</span></span></button>'
       + '<div class="r"><div class="dtx"><b class="d">' + GKISA[d.getDay()] + '</b>' + d.getDate() + ' ' + AY[d.getMonth()] + (hf ? '<em class="hf">' + hf + '. hafta</em>' : '') + '</div>'
       + '<button class="ib" id="tb" type="button" aria-label="Tema: ' + TEMA_AD[th] + ' (değiştirmek için dokun)"><svg viewBox="0 0 24 24">' + TEMA_IK[th] + '</svg></button></div></div>';
@@ -906,6 +907,7 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
     else if (TAB === 1) $('t1').innerHTML = t1HTML(C);
     else if (TAB === 2) $('t2').innerHTML = t2HTML(C);
     else $('t3').innerHTML = t3HTML(C);
+    bolgeRenk();
     $('scr').dataset.tab = TAB;
     yaz(K.son, JSON.stringify([TAB, PS]));
     tick(true);
@@ -917,7 +919,40 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
       else if (TAB === 3) gorulduYaz(haberListe(CTX.y).map(haberAnahtar));
     }, 5000);
   }
-  function uygulaGizle() { [].forEach.call(document.querySelectorAll('#t0 [data-k]'), function (e) { e.style.display = GIZLE[e.dataset.k] ? 'none' : ''; }); }
+  var BR = { gunum: 'var(--c-gunum)', yarin: 'var(--c-yarin)', yaklasan: 'var(--c-yaklasan)', neler: 'var(--c-neler)', nobet: 'var(--c-nobet)', pano: 'var(--c-pano)', not: 'var(--c-not)' };
+  function bolgeAdi(e) {
+    var t = (e.textContent || '').slice(0, 48).toLocaleLowerCase('tr'), k = e.getAttribute('data-k');
+    if (t.indexOf('günüm') === 0) { var on = document.querySelector('#gv button.on'); return on && on.getAttribute('data-v') !== 'b' ? 'yarin' : 'gunum'; }
+    if (k === 'akis' || k === 'cov' || t.indexOf('ders doldurma') === 0 || t.indexOf('bugünkü program') === 0 || t.indexOf('gün akışı') === 0) return 'gunum';
+    if (t.indexOf('yaklaşan') === 0 || t.indexOf('kayıtları') > 0) return 'yaklasan';
+    if (t.indexOf('okulda neler') === 0) return 'neler';
+    if (t.indexOf('nöbet') >= 0 || t.indexOf('yeni nöbet') === 0) return 'nobet';
+    if (t.indexOf('notların') === 0 || t.indexOf('hatırlatma') >= 0) return 'not';
+    return 'pano';
+  }
+  function bolgeRenk() {
+    ['t0', 't1', 't2', 't3'].forEach(function (id) {
+      var el = $(id); if (!el) return;
+      var l = [].filter.call(el.children, function (e) { return e.classList.contains('sec') && e.style.display !== 'none'; });
+      [].forEach.call(el.children, function (e) { if (e.classList.contains('sec') && e.style.display === 'none') e.removeAttribute('data-r'); });
+      var r = l.map(bolgeAdi);
+      l.forEach(function (e, i) {
+        e.setAttribute('data-r', r[i]); e.style.setProperty('--sc', BR[r[i]]);
+        if (i > 0) e.style.setProperty('--scp', BR[r[i - 1]]); else e.style.removeProperty('--scp');
+        if (i < l.length - 1) e.style.setProperty('--scn', BR[r[i + 1]]); else e.style.removeProperty('--scn');
+      });
+    });
+  }
+  function ayrintiRenk(kod) {
+    var p = String(kod).split(':'), t = p[0], r = 'pano';
+    if (t === 'ak' || t === 'dn') r = 'gunum';
+    else if (t === 'gun') r = p[1] === iso(simdi()) ? 'gunum' : 'yarin';
+    else if (t === 'nb' || t === 'nbd') r = 'nobet';
+    else if (t === 'du') r = 'neler';
+    else if (t === 'ol' || t === 'bg') r = 'yaklasan';
+    var d = $('dt'); d.setAttribute('data-r', r); d.style.setProperty('--sc', BR[r]);
+  }
+  function uygulaGizle() { [].forEach.call(document.querySelectorAll('#t0 [data-k]'), function (e) { e.style.display = GIZLE[e.dataset.k] ? 'none' : ''; }); bolgeRenk(); }
   function kaymaDurumu() {
     var s = $('scr'); if (!s) return;
     $('mini').classList.toggle('on', TAB === 0 && !!document.querySelector('#top .hr') && s.scrollTop > 230);
@@ -989,8 +1024,9 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
     if ((b = t.closest('[data-nt]'))) { var kk = b.getAttribute('data-nt'); dtKapat(); notAc(kk, null); return; }
     if ((b = t.closest('[data-dt]')) && !t.closest('a')) { dtAc(b.getAttribute('data-dt')); return; }
     if ((b = t.closest('nav button'))) { TAB = +b.getAttribute('data-t'); $('scr').scrollTop = 0; render(); return; }
+    if ((b = t.closest('[data-kzr]'))) { var w0 = $('kzw'); if (w0) { w0.innerHTML = '<div class="kzn">Kazanımlar yükleniyor…</div>'; var c0 = KZ.rk; if (c0) kzDoldur(c0.my, c0.ds); } return; }
     if ((b = t.closest('[data-kz]')) && KZ.cur) { var ix = +b.getAttribute('data-kz'); KZ.sel = KZ.sel === ix ? -1 : ix; kzCiz(); return; }
-    if ((b = t.closest('[data-kzi]')) && KZ.cur) { var c = KZ.cur, h = kzHafta(c.P, c.ds), q = +b.getAttribute('data-kzi'); if (h && h.m[q]) { var isl = okuJ(K.isl, {}), kk = kzAnk(c.P, c.my, h, q); if (isl[kk]) delete isl[kk]; else isl[kk] = 1; yaz(K.isl, JSON.stringify(isl)); kzCiz(); } return; }
+    if ((b = t.closest('[data-kzi]')) && KZ.cur) { var c = KZ.cur, q = +b.getAttribute('data-kzi'), h = c.P.uniteler ? { m: kzFlat(c.P) } : kzHafta(c.P, c.ds); if (h && h.m[q]) { var isl = okuJ(K.isl, {}), kk = c.P.uniteler ? kzAnkU(c.P, c.my, h.m[q]) : kzAnk(c.P, c.my, h, q); if (isl[kk]) delete isl[kk]; else isl[kk] = 1; yaz(K.isl, JSON.stringify(isl)); kzCiz(); } return; }
     if (t.closest('#tb')) { temaDegis(); return; }
     if (t.closest('#ob')) { ayarAc(); return; }
     if (t.closest('#yn')) { yenile(true); return; }
@@ -1063,6 +1099,7 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
   }
   function dtAc(kod) {
     var p = String(kod).split(':'), t = p[0];
+    ayrintiRenk(kod);
     if (t === 'ak') return dtAk(p[1], +p[2]);
     if (t === 'dn') { var G = gunBaglam(tarihCoz(p[1])), ix = -1; G.sc.forEach(function (r, i) { if (r[0] === 'ders' && dersNo(r) === +p[2]) ix = i; }); return ix >= 0 ? dtAk(p[1], ix) : undefined; }
     if (t === 'gun') return dtGun(p[1]);
@@ -1080,20 +1117,43 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
 
   // ================= KAZANIMLAR (MEB yıllık planı; uygulamayla birlikte gelen statik dosyalar, öğretmenin cihazında okunur) =================
   var KZ = { idx: null, dos: {}, cur: null, sel: -1, bekle: {} };
-  var KZ_ANAH = { mat: 'mat', matematik: 'mat', turkce: 'tur', fen: 'fen', fenbilimleri: 'fen', ing: 'ing', ingilizce: 'ing', sosyal: 'sos', sosyalbilgiler: 'sos', inklap: 'ita', inkilap: 'ita', ita: 'ita', dink: 'dkab', dkab: 'dkab', muzik: 'muz', bedegt: 'bes', bedenegitimi: 'bes', resim: 'gs', gorselsanatlar: 'gs', tektsr: 'tt', teknolojitasarim: 'tt', blsm: 'bty', bilisim: 'bty' };
+  var KZ_ANAH = { mat: 'mat', matematik: 'mat', turkce: 'tur', fen: 'fen', fenbilimleri: 'fen', ing: 'ing', ingilizce: 'ing', sosyal: 'sos', sosyalbilgiler: 'sos', inklap: 'ita', inkilap: 'ita', ita: 'ita', dink: 'dkab', dkab: 'dkab', muzik: 'muz', bedegt: 'bes', bedenegitimi: 'bes', resim: 'gs', gorselsanatlar: 'gs', tektsr: 'tt', tektas: 'tt', teknolojitasarim: 'tt', blsm: 'bty', bilisim: 'bty', dinkulturu: 'dkab', dinkulturuveahlakbilgisi: 'dkab', teknolojivetasarim: 'tt', bilisimteknolojileri: 'bty', bilisimteknolojilerivezilim: 'bty', tcinkilaptarihi: 'ita', inkilaptarihi: 'ita', inkilaptarihivataturkculuk: 'ita', inkilaptarihiveataturkculuk: 'ita', gorselsanat: 'gs', afets: 'afet', afetbilinci: 'afet', ahlks: 'ahlk', ahlakvevatandaslik: 'ahlk', cevres: 'cevre', cevreegitimi: 'cevre' };
+  // Ders kısaltması esnek eşlenir: tam ad ya da en az 3 harflik ön ek ("Müz.", "BedEğ", "Blşm."); birden çok farklı derse uyuyorsa eşleşmez.
+  function kzA(d) {
+    var x = kzAd(d); if (!x) return null; if (KZ_ANAH[x]) return KZ_ANAH[x];
+    if (x.length < 3) return null;
+    var bul = null, k;
+    for (k in KZ_ANAH) if (k.indexOf(x) === 0) { if (bul && bul !== KZ_ANAH[k]) return null; bul = KZ_ANAH[k]; }
+    return bul;
+  }
+  // Kazanımı bilerek olmayan dersler (seçmeli, rehberlik); bunlarda sessiz kalınır, başka her eşleşmeme görünür bir not alır.
+  var KZ_DOSYA = { afet: 'afet1.json', ahlk: 'ahlk1.json', cevre: 'cevre8.json' };
+  var KZ_YOK = /^(reh|spor|yabdil|yabancidil|gkn|kultmed|kulturmed|dersdoldurma|doldurma)/;
+  var KZ_TANI = { son: '', idx: '', dosya: '' };
+  // Hücredeki ders adından eşle; ders adı yoksa ya da tanınmıyorsa öğretmenin kayıtlı branşından yedek eşleme (açıkça kazanımsız dersler hariç).
+  function kzEsle(my) {
+    var d = my && my.ders, a = kzA(d), kim = null, br = '';
+    if (a) { KZ_TANI.son = 'ders "' + (d || '') + '" → ' + a; return { a: a, yedek: false }; }
+    if (d && KZ_YOK.test(kzAd(d))) { KZ_TANI.son = 'ders "' + d + '" kazanımsız ders'; return null; }
+    try { kim = kisisel(Y(), 'kimlik'); br = (kim && kim.brans) || ''; } catch (e) {}
+    a = kzA(br);
+    if (a) { KZ_TANI.son = 'ders "' + (d || '') + '" tanınmadı; branş "' + br + '" → ' + a; return { a: a, yedek: true }; }
+    KZ_TANI.son = 'ders "' + (d || '') + '" tanınmadı, branş "' + br + '" da tanınmadı'; return { a: null, yedek: false, tani: true };
+  }
   function kzAd(a) { return String(a || '').toLocaleLowerCase('tr').replace(/[çğıöşüâîû]/g, function (c) { return { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'â': 'a', 'î': 'i', 'û': 'u' }[c]; }).replace(/[^a-z]/g, ''); }
   function kzJson(url) {
     if (KZ.bekle[url]) return KZ.bekle[url];
     return (KZ.bekle[url] = fetch(url).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function () { delete KZ.bekle[url]; return null; }));
   }
   function kzIndeks() {
-    return kzJson('kazanim/index.json').then(function (j) { if (j && Array.isArray(j.plan)) { var ilk = !KZ.idx; KZ.idx = j; if (ilk && !kilit && !DT.acik) render(); } return KZ.idx; });
+    return kzJson('kazanim/index.json').then(function (j) { if (j && Array.isArray(j.plan)) { var ilk = !KZ.idx; KZ.idx = j; KZ_TANI.idx = j.plan.length + ' plan'; if (ilk && !kilit && !DT.acik) render(); } else if (!KZ.idx) KZ_TANI.idx = 'yüklenemedi'; return KZ.idx; });
   }
-  function kzPlan(my) {
-    if (!my || !KZ.idx) return null;
-    var a = KZ_ANAH[kzAd(my.ders)], g = parseInt(my.sinif, 10); if (!a || !(g >= 5 && g <= 8)) return null;
-    for (var i = 0; i < KZ.idx.plan.length; i++) if (KZ.idx.plan[i].a === a && KZ.idx.plan[i].s === g) return KZ.idx.plan[i];
-    return null;
+  function kzPlan(my, a) {
+    if (!my || !a) return null;
+    var g = parseInt(my.sinif, 10); if (!(g >= 5 && g <= 8)) return null;
+    if (KZ.idx) { for (var i = 0; i < KZ.idx.plan.length; i++) if (KZ.idx.plan[i].a === a && KZ.idx.plan[i].s === g) return KZ.idx.plan[i]; return null; }
+    // Liste dosyası yüklenemediyse dosya adı doğrudan türetilir (liste olmadan da çalışsın)
+    return { a: a, s: g, f: KZ_DOSYA[a] || (a + g + '.json'), yedekAd: true };
   }
   function kzHafta(P, ds) {
     var son = null;
@@ -1106,6 +1166,7 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
   function kzAnk(P, my, h, i) { var m = h.m[i]; return P.anahtar + P.sinif + ':' + my.sinif + ':' + (m.k || (h.n + '#' + i)); }
   function kzCiz() {
     var c = KZ.cur, w = $('kzw'); if (!c || !w || w.getAttribute('data-ds') !== c.ds) return;
+    if (c.P.uniteler) { kzCizU(c, w); return; }
     var P = c.P, my = c.my, h = kzHafta(P, c.ds), isl = okuJ(K.isl, {}), out = '';
     out += '<h4 class="kzt">Bu haftanın kazanımları</h4>';
     if (!h) { w.innerHTML = out + '<div class="kzn">Bu tarih için planda hafta bulunmuyor.</div>' + kzKaynak(P); return; }
@@ -1126,17 +1187,49 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
     out += '<div class="kzm">' + say + '/' + h.m.length + ' işlendi · yalnız bu cihazda kayıtlı</div>' + kzKaynak(P);
     w.innerHTML = out;
   }
-  function kzKaynak(P) { return '<div class="kzm">Kaynak: ' + esc(P.kaynak) + '</div>'; }
+  // Hafta hafta planı olmayan dersler (seçmeliler): kazanımlar ünite sırasıyla listelenir
+  function kzFlat(P) { var f = []; P.uniteler.forEach(function (u) { u.m.forEach(function (m) { f.push(m); }); }); return f; }
+  function kzAnkU(P, my, m) { return P.anahtar + P.sinif + ':' + my.sinif + ':' + m.k; }
+  function kzCizU(c, w) {
+    var P = c.P, my = c.my, isl = okuJ(K.isl, {}), f = kzFlat(P), out = '', say = 0, idx = 0, i;
+    for (i = 0; i < f.length; i++) if (isl[kzAnkU(P, my, f[i])]) say++;
+    out += '<h4 class="kzt">Dersin kazanımları</h4><div class="kzs">Bu ders için hafta hafta plan yok. Kazanımlar ünite sırasıyla listelenir.</div>';
+    P.uniteler.forEach(function (u) {
+      var ilk = idx;
+      out += '<div class="kzu"><b>' + esc(u.n + '. ' + u.u) + '</b>' + (u.saat ? '<span>' + esc(String(u.saat)) + ' ders saati</span>' : '') + '</div><div class="kzc0">';
+      u.m.forEach(function (m) {
+        var q = idx++, d = !!isl[kzAnkU(P, my, m)], on = KZ.sel === q;
+        out += '<button type="button" class="kzc' + (on ? ' on' : '') + (d ? ' ok' : '') + '" data-kz="' + q + '" aria-expanded="' + (on ? 'true' : 'false') + '"><span>' + esc(m.k) + '</span>' + (d ? '<i aria-label="işlendi"></i>' : '') + '</button>';
+      });
+      out += '</div>';
+      if (KZ.sel >= ilk && KZ.sel < idx && f[KZ.sel]) {
+        var m = f[KZ.sel], d = !!isl[kzAnkU(P, my, m)];
+        out += '<div class="kzp"><b class="kzk">' + esc(m.k) + '</b><p>' + esc(m.t) + '</p>' + (m.d && m.d.length ? '<ul>' + m.d.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '')
+          + '<button type="button" class="kzi' + (d ? ' on' : '') + '" data-kzi="' + KZ.sel + '"><span class="kzbox"></span>' + (d ? 'İşlendi · geri al' : 'İşlendi olarak işaretle') + '</button></div>';
+      }
+    });
+    out += '<div class="kzm">' + say + '/' + f.length + ' işlendi · yalnız bu cihazda kayıtlı</div>' + kzKaynak(P);
+    w.innerHTML = out;
+  }
+  function kzKaynak(P) { return '<div class="kzm">Kaynak: ' + esc(P.kaynak) + '</div>' + (KZ.cur && KZ.cur.yedek ? '<div class="kzm">Ders adı programda tanınmadığı için branşına göre gösteriliyor.</div>' : ''); }
+  function kzNot(ds, m, yeniden) { var w = $('kzw'); if (w && w.getAttribute('data-ds') === ds) w.innerHTML = '<div class="kzn">' + esc(m) + '</div>' + (yeniden ? '<button type="button" class="lk" data-kzr="1" style="margin-top:8px">Yeniden dene</button>' : ''); }
   function kzDoldur(my, ds) {
     var w = $('kzw'); if (!w) return;
-    kzIndeks().then(function (ix) {
+    KZ.rk = { my: my, ds: ds };
+    var e = kzEsle(my);
+    if (!e) { w.innerHTML = ''; return; }
+    if (!e.a) { kzNot(ds, 'Bu ders için kazanım eşleşmedi (ders: ' + (my.ders ? '"' + my.ders + '"' : 'yazılmamış') + '). Yönetime bu ders adını bildir.'); return; }
+    var g = parseInt(my.sinif, 10);
+    if (!(g >= 5 && g <= 8)) { w.innerHTML = ''; return; }
+    kzIndeks().then(function () {
       if (!$('kzw') || $('kzw').getAttribute('data-ds') !== ds) return;
-      var pl = kzPlan(my);
-      if (!pl) { $('kzw').innerHTML = ''; return; }
+      var pl = kzPlan(my, (e.a === 'sos' && g === 8) ? 'ita' : e.a); // 8. sınıfta Sosyal Bilgiler dersinin adı İnkılap Tarihi ve Atatürkçülük
+      if (!pl) { kzNot(ds, 'Bu ders ve sınıf için kazanım planı bulunmuyor.'); return; }
       kzJson('kazanim/' + pl.f).then(function (P) {
         if (!$('kzw') || $('kzw').getAttribute('data-ds') !== ds) return;
-        if (!P || !Array.isArray(P.haftalar)) { $('kzw').innerHTML = '<div class="kzn">Kazanımlar şu an yüklenemedi. İnternet bağlantını kontrol edip tekrar aç.</div>'; return; }
-        KZ.cur = { P: P, my: my, ds: ds }; KZ.sel = -1; kzCiz();
+        if (!P || (!Array.isArray(P.haftalar) && !Array.isArray(P.uniteler))) { KZ_TANI.dosya = 'kazanim/' + pl.f + ' yüklenemedi'; kzNot(ds, pl.yedekAd ? 'Kazanım dosyası yüklenemedi. İnternet bağlantını kontrol edip yeniden dene.' : 'Kazanımlar şu an yüklenemedi. İnternet bağlantını kontrol edip yeniden dene.', true); return; }
+        KZ_TANI.dosya = 'kazanim/' + pl.f + ' yüklendi';
+        KZ.cur = { P: P, my: my, ds: ds, yedek: e.yedek }; KZ.sel = -1; kzCiz();
       });
     });
   }
@@ -1160,9 +1253,9 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
     h += dtSatir('gun:' + ds, '', 'Günün tamamı', '', '');
     h += '</div>';
     if (my || cv) h += '<button class="lk" type="button" data-nt="' + (G.gb.wd - 1) + ',' + (no - 1) + '" style="margin-top:16px">Bu derse not ekle</button>';
-    if (my && KZ_ANAH[kzAd(my.ders)]) h += '<div class="kzw" id="kzw" data-ds="' + ds + '"><div class="kzn">Kazanımlar yükleniyor…</div></div>';
+    if (my && kzEsle(my)) h += '<div class="kzw" id="kzw" data-ds="' + ds + '"><div class="kzn">Kazanımlar yükleniyor…</div></div>';
     dtGoster(les ? r[1] : r[1], h);
-    if (my && KZ_ANAH[kzAd(my.ders)]) kzDoldur(my, ds);
+    if (my && kzEsle(my)) kzDoldur(my, ds);
   }
   function dtGun(ds) {
     var d = tarihCoz(ds), G = gunBaglam(d), y = G.y, gb = G.gb, bugun = ds === iso(simdi());
@@ -1238,8 +1331,16 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
       + '<h4>Açılış sayfası</h4>' + secenek('o_ap', oku(K.acilis) || '0', [['0', 'Bugün'], ['1', 'Programım'], ['1p', 'Program'], ['1n', 'Nöbet'], ['2', 'Takvim'], ['3', 'Pano'], ['son', 'Son baktığım']])
       + '<h4>Bugün sekmesinde göster</h4>' + TOG.map(function (x) { return '<div class="tg' + (GIZLE[x[0]] ? '' : ' on') + '" data-k="' + x[0] + '"><span>' + x[1] + '</span><i></i></div>'; }).join('')
       + '<h4>Hesap</h4><div class="kv"><span>Öğretmen</span><b>' + esc((y && y.kisi && y.kisi.ad) || '—') + '</b></div><div class="kv"><span>Okul</span><b>' + esc((y && y.okul) || '—') + '</b></div><div class="kv"><span>Son güncelleme</span><b>' + (o ? esc(saatStr(o.t)) : '—') + '</b></div><div class="kv"><span>Sürüm</span><b>' + esc(A.SURUM) + '</b></div>'
+      + tanilama()
       + '<button class="fin2" id="forget" type="button">Bu cihazdan çık</button><button class="fin" id="fin" type="button">Tamam</button>';
     $('sh').classList.add('on'); $('shd').classList.add('on');
+  }
+  // Sorun olduğunda öğretmenin okuyup bildirebileceği kısa durum özeti (kişisel veri içermez)
+  function tanilama() {
+    var sw = ('serviceWorker' in navigator) ? (navigator.serviceWorker.controller ? 'etkin' : 'yok') : 'desteklenmiyor';
+    var st = (window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) ? 'ana ekran uygulaması' : 'tarayıcı';
+    var satir = [['Uygulama kodu', APP_SURUM + (APP_SURUM !== A.SURUM ? ' (ayar dosyası ' + A.SURUM + ': eşleşmiyor)' : '')], ['Kazanım listesi', KZ_TANI.idx || 'henüz denenmedi'], ['Kazanım dosyası', KZ_TANI.dosya || 'henüz denenmedi'], ['Son ders eşleme', KZ_TANI.son || 'henüz denenmedi'], ['Çevrimdışı hizmet', sw], ['Çalışma biçimi', st]];
+    return '<details class="kzo"><summary>Tanılama (sorun olursa göster)</summary>' + satir.map(function (x) { return '<div class="kv"><span>' + esc(x[0]) + '</span><b style="font-size:13px;font-weight:600;text-align:right">' + esc(x[1]) + '</b></div>'; }).join('') + '</details>';
   }
   $('sh').addEventListener('click', function (ev) {
     var t = ev.target, b;
@@ -1389,5 +1490,18 @@ function skLocal(now){ const t=new Date(now.getTime()+SK_TZ*3600000); return {y:
   // ================= BAŞLAT =================
   tercihUygula(); kzIndeks();
   if (oku(K.okul) && oku(K.kod)) { acilisUygula(); render(); yenile(false); } else kilitGoster('okul');
+  (function () { var s = document.getElementById('spl'); if (!s) return; var bekle = Math.max(0, 900 - (Date.now() - (window.__splT || Date.now()))); setTimeout(function () { s.classList.add('bit'); setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 700); }, bekle); })();
+  // Ayar dosyası ile uygulama dosyası farklı sürümdeyse (önbellekte eski dosya kalmış): önbellek günde en çok bir kez temizlenip yeniden yüklenir.
+  // Çevrimdışıyken dokunulmaz (çevrimdışı kopya korunur); temizlik başarısız olursa yeniden yükleme yapılmaz.
+  if (APP_SURUM !== A.SURUM && navigator.onLine !== false && window.caches) {
+    var bugunAnh = new Date().toISOString().slice(0, 10), son = ''; try { son = localStorage.getItem('ogr_temizle') || ''; } catch (e) {}
+    if (son !== bugunAnh) {
+      try { localStorage.setItem('ogr_temizle', bugunAnh); } catch (e) {}
+      caches.keys().then(function (k) { return Promise.all(k.map(function (x) { return caches.delete(x); })); })
+        .then(function () { return navigator.serviceWorker && navigator.serviceWorker.getRegistrations ? navigator.serviceWorker.getRegistrations() : []; })
+        .then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); })
+        .then(function () { location.reload(); }, function () {});
+    }
+  }
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
 })();
